@@ -1,30 +1,47 @@
-# Form Builder React (Drag & Drop)
+# Form Creation Application for EHS & DFWCZ
 
-### Check out the [Live App](https://release.d2xczvacbbtxrp.amplifyapp.com/)
+## Overview
 
-## About
-This application is a drag & drop form builder built in React and bundled with Webpack. It allows you to create multi-step forms by adding containers, with each container representing a new step. The elements within the containers are displayed on the UI based on the current step the user is in.
+This application allows **Admin** and **Manager** users to create, manage, and track forms specifically designed for **Environmental Health & Safety (EHS)** at **DFWCZ**. It is tailored to streamline the process of gathering data through customizable forms, ensuring safety protocols and procedures are adhered to efficiently.
 
-Key features of the app include:
+## Key Features
 
-- Create a new Template
-- Add Elements to templates by Dragging & Dropping elements to the form area.
-- Sort Elements inside containers by Dragging & Dropping.
-- Click Containers/Elements to edit their properties.
-- Save & Publish changes
-- Preview Changes on how it will look on a mobile phone.
+- **Role-Based Access**: Admins and Managers can create and manage forms.
+- **Form Builder**: Drag-and-drop UI for designing and customizing forms.
+- **Conditional Logic**: Forms can include conditional fields based on user responses.
+- **Form Management**: Admins and Managers can view, edit, or delete forms as needed.
+- **Submission Tracking**: Track form submissions and export data for reporting.
+- **Real-Time Notifications**: Receive notifications for form submissions.
 
-With these capabilities, the drag & drop form builder empowers you to easily create, customize, save, publish, and preview multi-step forms, streamlining the form-building process for your application or website.
+## Roles and Permissions
 
-## Dev Server
-This project uses npm version 18.1
+### Admin
 
-### Available Scripts
+- Create, edit, and delete forms.
+- Access all submissions and form data.
+- Assign Managers to specific forms.
+- Configure form categories and tags.
 
-In the project directory, you can run:
+### Manager
 
-#### `npm start`
-"# ehs_forms" 
-"# ehs_forms" 
-"# ehs_forms" 
-"# ehs_forms" 
+- Create and edit assigned forms.
+- View submissions for forms they’ve created.
+- Download reports for the forms they manage.
+
+## Getting Started
+
+### Prerequisites
+
+Ensure you have the following installed:
+
+- **Node.js** (v14 or above)
+- **MongoDB** (for storing form and submission data)
+- **npm** (Node package manager)
+
+### Installation
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/yourusername/dfwcz-ehs-form-app.git
+   cd dfwcz-ehs-form-app
+   ```
