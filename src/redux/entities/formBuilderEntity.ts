@@ -9,6 +9,7 @@ import {
 import { generateID } from "../../utils/common";
 import moment from "moment";
 import _ from "lodash";
+import { getAllForms } from "../../api";
 
 interface AddTemplateType {
   formName: string;
@@ -17,42 +18,44 @@ interface AddTemplateType {
 // Logic to Get All Templates
 export const getAllTemplates = createAsyncThunk(
   "formBuilderEntity/getAllTemplates",
-  async (data, thunkAPI) => {
-    // Open the Circular Progress
-    thunkAPI.dispatch(openCircularProgress());
-    return await new Promise<TemplateType[]>((resolve, reject) => {
-      let outputInStorage = JSON.parse(getFromLocalStorage("templates"));
-      // Check if its null;
-      if (outputInStorage === null) {
-        outputInStorage = DemoFormLayouts;
-        saveToLocalStorage("templates", JSON.stringify(outputInStorage));
-      }
-      setTimeout(() => {
-        // Close the Circular Progress
-        thunkAPI.dispatch(closeCircularProgress());
-        resolve(outputInStorage);
-      }, 1000);
-    });
+  async (userId: number, thunkAPI) => {
+    try {
+      // Open the Circular Progress
+      thunkAPI.dispatch(openCircularProgress());
+
+      // Fetch templates from the API using getAllForms
+      const templates = await getAllForms(userId);
+
+      return templates; // Return fetched templates
+    } catch (error) {
+      console.error("Error in getAllTemplates thunk:", error);
+      return thunkAPI.rejectWithValue("Failed to fetch templates");
+    } finally {
+      // Close the Circular Progress
+      thunkAPI.dispatch(closeCircularProgress());
+    }
   }
 );
 
 // Logic to get Single Template
 export const getSingleTemplate = createAsyncThunk(
   "formBuilderEntity/getSingleTemplate",
-  async (data: string, thunkAPI) => {
-    // Open the Circular Progress
-    thunkAPI.dispatch(openCircularProgress());
-    return await new Promise<TemplateType>((resolve, reject) => {
-      const allTemplates: TemplateType[] = JSON.parse(
-        getFromLocalStorage("templates")
-      );
-      const singleTemplate = allTemplates.filter((t) => t.id === data)[0];
-      setTimeout(() => {
-        // Close the Circular Progress
-        thunkAPI.dispatch(closeCircularProgress());
-        resolve(singleTemplate);
-      }, 1000);
-    });
+  async (templateId: string, thunkAPI) => {
+    try {
+      // Open the Circular Progress
+      thunkAPI.dispatch(openCircularProgress());
+
+      // Fetch the single template from the API
+      const response = await getAllForms(templateId);
+
+      return response.form_content; // Return the single template data
+    } catch (error) {
+      console.error("Error fetching single template:", error);
+      return thunkAPI.rejectWithValue("Failed to fetch the template");
+    } finally {
+      // Close the Circular Progress
+      thunkAPI.dispatch(closeCircularProgress());
+    }
   }
 );
 
@@ -80,13 +83,12 @@ export const addTemplate = createAsyncThunk(
       };
       allTemplates.push(template);
       setTimeout(() => {
-        saveToLocalStorage("templates",JSON.stringify(allTemplates));
+        saveToLocalStorage("templates", JSON.stringify(allTemplates));
         resolve(template);
       }, 1000);
     });
   }
 );
-
 
 // Logic to delete a template
 export const deleteTemplate = createAsyncThunk(
@@ -94,16 +96,16 @@ export const deleteTemplate = createAsyncThunk(
   async (data: string, thunkAPI) => {
     // Open the Circular Progress
     thunkAPI.dispatch(openCircularProgress());
-    return await new Promise<number>((resolve, reject)=>{
+    return await new Promise<number>((resolve, reject) => {
       const allTemplates: TemplateType[] = JSON.parse(
         getFromLocalStorage("templates")
       );
-      const deleteIndex = allTemplates.findIndex((t)=>t.id === data);
-      allTemplates.splice(deleteIndex,1);
+      const deleteIndex = allTemplates.findIndex((t) => t.id === data);
+      allTemplates.splice(deleteIndex, 1);
       setTimeout(() => {
         // Close the Circular Progress
         thunkAPI.dispatch(closeCircularProgress());
-        saveToLocalStorage("templates",JSON.stringify(allTemplates));
+        saveToLocalStorage("templates", JSON.stringify(allTemplates));
         resolve(deleteIndex);
       }, 600);
     });
@@ -116,7 +118,7 @@ export const saveTemplate = createAsyncThunk(
   async (data: TemplateType, thunkAPI) => {
     // Open the Circular Progress
     thunkAPI.dispatch(openCircularProgress());
-    return await new Promise<TemplateType>((resolve, reject)=>{
+    return await new Promise<TemplateType>((resolve, reject) => {
       const allTemplates: TemplateType[] = JSON.parse(
         getFromLocalStorage("templates")
       );
@@ -124,14 +126,15 @@ export const saveTemplate = createAsyncThunk(
       let templateIndex = allTemplates.findIndex((t) => t.id === data.id);
       allTemplates[templateIndex] = data;
       setTimeout(() => {
-        // Close the Circular Progress
         thunkAPI.dispatch(closeCircularProgress());
-        saveToLocalStorage("templates",JSON.stringify(allTemplates));
+        saveToLocalStorage("templates", JSON.stringify(allTemplates));
         resolve(data);
       }, 1000);
-    })
+    });
   }
 );
+
+
 
 const slice = createSlice({
   name: "formBuilderEntity",
@@ -159,17 +162,19 @@ const slice = createSlice({
         state.allTemplates = updatedState;
       }
     );
-    builder.addCase(saveTemplate.fulfilled, (state, action)=>{
+    builder.addCase(saveTemplate.fulfilled, (state, action) => {
       const newStateTemplates = state.allTemplates.slice();
-      const newTemplateId = newStateTemplates.findIndex((t)=>t.id === action.payload.id);
+      const newTemplateId = newStateTemplates.findIndex(
+        (t) => t.id === action.payload.id
+      );
       newStateTemplates[newTemplateId] = action.payload;
       state.allTemplates = newStateTemplates;
     });
-    builder.addCase(deleteTemplate.fulfilled,(state,action)=>{
+    builder.addCase(deleteTemplate.fulfilled, (state, action) => {
       const newStateTemplates = state.allTemplates.slice();
-      newStateTemplates.splice(action.payload,1);
+      newStateTemplates.splice(action.payload, 1);
       state.allTemplates = newStateTemplates;
-    })
+    });
   },
 });
 

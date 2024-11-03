@@ -1,24 +1,34 @@
 import React, { FunctionComponent, useEffect, useState } from "react";
 import { Button } from "@mui/material";
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from "tss-react/mui";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import DropContainerComponent from './subcomponents/DropContainerComponent'
-import EditPropertiesComponent from './subcomponents/EditPropertiesComponent'
+import DropContainerComponent from "./subcomponents/DropContainerComponent";
+import EditPropertiesComponent from "./subcomponents/EditPropertiesComponent";
 import {
   isMobile as libIsMobile,
   isTablet as libIsTablet,
 } from "react-device-detect";
 import LeftSidebar from "./LeftSidebar";
 import useFormBuilder from "./hooks/useFormBuilder";
-import useFormPreview from './hooks/useFormPreview';
+import useFormPreview from "./hooks/useFormPreview";
 import { Publish, RemoveRedEye } from "@mui/icons-material";
-import { FormContainerList, FormControlList, FormItemTypes } from "../../utils/formBuilderUtils";
-import FormPreview from './subcomponents/FormPreview';
-import { FormLayoutComponentChildrenType, FormLayoutComponentContainerType, FormLayoutComponentsType, TemplateType } from "../../types/FormTemplateTypes";
+import {
+  FormContainerList,
+  FormControlList,
+  FormItemTypes,
+} from "../../utils/formBuilderUtils";
+import FormPreview from "./subcomponents/FormPreview";
+import {
+  FormLayoutComponentChildrenType,
+  FormLayoutComponentContainerType,
+  FormLayoutComponentsType,
+  TemplateType,
+} from "../../types/FormTemplateTypes";
 import { generateID } from "../../utils/common";
 import ControlDragComponent from "./subcomponents/ControlDragComponent";
 import { useNavigate } from "react-router-dom";
+import { updateForm } from "../../api";
 
 let isMobile: boolean;
 if (process.env.NODE_ENV === "localhost") {
@@ -28,7 +38,9 @@ if (process.env.NODE_ENV === "localhost") {
 }
 
 interface FormBuilderProps {
-  template: TemplateType
+  template: TemplateType;
+  id: string;
+  fullForm: any;
 }
 
 const useStyles = makeStyles()(() => ({
@@ -40,11 +52,9 @@ const useStyles = makeStyles()(() => ({
     height: "calc(100vh - 63px);",
     overflowY: "auto",
   },
-}));  
-
+}));
 
 const FormBuilder: FunctionComponent<FormBuilderProps> = (props) => {
-
   const {
     handleItemAdded,
     saveForm,
@@ -54,18 +64,25 @@ const FormBuilder: FunctionComponent<FormBuilderProps> = (props) => {
     editControlProperties,
     moveControl,
     moveControlFromSide,
-    publishForm,
+    // publishForm,
     selectControl,
     selectedTemplate,
     formLayoutComponents,
     selectedControl,
   } = useFormBuilder({ template: props.template });
 
+  const publishForm = async () => {
+    try {
+      await updateForm(props.id, props.fullForm);
+    } catch {
+      console.log("Error in publishing form");
+    }
+  };
 
   const { showPreview, openPreviewDrawer, closePreviewDrawer } =
     useFormPreview();
 
-  const {classes} = useStyles();
+  const { classes } = useStyles();
 
   const navigate = useNavigate();
 
@@ -81,7 +98,10 @@ const FormBuilder: FunctionComponent<FormBuilderProps> = (props) => {
                   style={{ paddingLeft: "30px !important" }}
                 >
                   <div className="container">
-                    <LeftSidebar handleItemAdded={handleItemAdded} formLayoutComponents={formLayoutComponents} />
+                    <LeftSidebar
+                      handleItemAdded={handleItemAdded}
+                      formLayoutComponents={formLayoutComponents}
+                    />
                   </div>
                 </div>
                 <div className="col-lg-6">
@@ -94,7 +114,7 @@ const FormBuilder: FunctionComponent<FormBuilderProps> = (props) => {
                           <div className="action-buttons d-flex">
                             <Button
                               onClick={() => {
-                                navigate('/');
+                                navigate("/");
                               }}
                               className="mx-2"
                             >
@@ -199,4 +219,3 @@ const FormBuilder: FunctionComponent<FormBuilderProps> = (props) => {
 };
 
 export default FormBuilder;
-

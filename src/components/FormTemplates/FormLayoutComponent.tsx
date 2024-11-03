@@ -4,14 +4,14 @@ import { useNavigate } from "react-router-dom";
 import "./styles.scss";
 import { FormPublishStatus } from "../../utils/formBuilderUtils";
 import { IconButton } from "@mui/material";
-import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteIcon from "@mui/icons-material/Delete";
 import { useAppDispatch } from "../../redux/hooks";
 import { deleteTemplate } from "../../redux/entities/formBuilderEntity";
 
 interface FormLayoutComponentProps {
   template?: TemplateType;
   createdFormLayout: boolean;
-  setOpenDialog?: (arg: boolean)=>void;
+  setOpenDialog?: (arg: boolean) => void;
 }
 
 const newFormLayout = {
@@ -26,11 +26,9 @@ const newFormLayout = {
   borderRadius: "9px",
 };
 
-const FormLayoutComponent: FunctionComponent<
-  FormLayoutComponentProps
-> = (props) => {
-
-
+const FormLayoutComponent: FunctionComponent<FormLayoutComponentProps> = (
+  props
+) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { template, createdFormLayout, setOpenDialog } = props;
@@ -78,17 +76,20 @@ const FormLayoutComponent: FunctionComponent<
                 : ""
             }`}
           >
-            {createdFormLayout
-              ? (template as TemplateType).formName
-              : "Blank Form"}
+            {createdFormLayout ? (template as TemplateType).name : "Blank Form"}
           </h5>
           {createdFormLayout ? (
             <>
-              <IconButton aria-label="delete" onClick={()=>{
-                if(confirm('Are you sure you want to delete the template?')){
-                  dispatch(deleteTemplate(template?.id as string));
-                }
-              }}>
+              <IconButton
+                aria-label="delete"
+                onClick={() => {
+                  if (
+                    confirm("Are you sure you want to delete the template?")
+                  ) {
+                    dispatch(deleteTemplate(template?.id as string));
+                  }
+                }}
+              >
                 <DeleteIcon />
               </IconButton>
             </>

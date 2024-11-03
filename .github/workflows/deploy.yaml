@@ -1,0 +1,71 @@
+# name: Deploy Vite Frontend Application
+
+# on:
+#     push:
+#         branches:
+#             - main
+
+# jobs:
+#     deploy:
+#         runs-on: ubuntu-latest
+
+#         steps:
+#             # Step 1: Checkout code
+#             - name: Checkout code
+#               uses: actions/checkout@v2
+
+#             # Step 2: Set up Node.js
+#             - name: Set up Node.js
+#               uses: actions/setup-node@v3
+#               with:
+#                   node-version: '19.x' # Adjust the Node.js version as per your requirements
+
+#             # Step 3: Install dependencies
+#             - name: Install dependencies
+#               run: |
+#                   npm install
+
+#             # Step 4: Build Vite application
+#             - name: Build Vite application
+#               run: |
+#                   npm run build
+
+#             # Step 5: Deploy to EC2 (prepare destination folder)
+#             - name: Prepare destination folder on EC2
+#               env:
+#                   SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+#                   HOST: ${{ secrets.EC2_HOST }}
+#                   USER: ${{ secrets.EC2_USER }}
+#               run: |
+#                   echo "$SSH_PRIVATE_KEY" > private_key.pem
+#                   chmod 600 private_key.pem
+#                   ssh -i private_key.pem -o StrictHostKeyChecking=no $USER@$HOST << 'EOF'
+#                     cd /home/ubuntu/ehs/ehs_frontend
+#                     rm -rf dist  # Remove the old build files
+#                     mkdir -p dist  # Ensure the dist directory exists
+#                     exit
+#                   EOF
+
+#             # Step 6: Upload build files to EC2
+#             - name: Upload build to EC2
+#               env:
+#                   SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+#                   HOST: ${{ secrets.EC2_HOST }}
+#                   USER: ${{ secrets.EC2_USER }}
+#               run: |
+#                   echo "$SSH_PRIVATE_KEY" > private_key.pem
+#                   chmod 600 private_key.pem
+#                   scp -i private_key.pem -r dist/* $USER@$HOST:/home/ubuntu/ehs/ehs_frontend/dist/
+
+#             # Step 7: Restart Nginx on EC2 (optional)
+#             - name: Restart Nginx (optional)
+#               env:
+#                   SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+#                   HOST: ${{ secrets.EC2_HOST }}
+#                   USER: ${{ secrets.EC2_USER }}
+#               run: |
+#                   echo "$SSH_PRIVATE_KEY" > private_key.pem
+#                   chmod 600 private_key.pem
+#                   ssh -i private_key.pem -o StrictHostKeyChecking=no $USER@$HOST << 'EOF'
+#                     sudo systemctl restart nginx
+#                   EOF

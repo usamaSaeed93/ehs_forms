@@ -4,7 +4,7 @@ import { getAllTemplates } from "../redux/entities/formBuilderEntity";
 import { useNavigate } from "react-router-dom";
 import NewFormDialogComponent from "../components/FormTemplates/NewFormDialogComponent";
 import FormLayoutComponent from "../components/FormTemplates/FormLayoutComponent";
-
+import { getAllForms } from "../api";
 interface TemplatesPageProps {}
 
 const TemplatesPage: FunctionComponent<TemplatesPageProps> = () => {
@@ -16,9 +16,14 @@ const TemplatesPage: FunctionComponent<TemplatesPageProps> = () => {
   const [openDialog, setOpenDialog] = useState<boolean>(false);
 
   useEffect(() => {
-    if (templates.length === 0) {
-      dispatch(getAllTemplates());
-    }
+    dispatch(getAllTemplates());
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      const response = await getAllForms();
+      console.log(response);
+    })();
   }, []);
 
   const newFormLayout = {
