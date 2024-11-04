@@ -1,18 +1,24 @@
-import React, { ChangeEventHandler, FormEventHandler, FunctionComponent, useEffect, useState } from 'react';
+import React, {
+  ChangeEventHandler,
+  FormEventHandler,
+  FunctionComponent,
+  useEffect,
+  useState,
+} from "react";
 import { Dialog, DialogContent, DialogTitle, TextField } from "@mui/material";
-import { useAppDispatch, useAppSelector } from '../../redux/hooks';
-import { addTemplate } from '../../redux/entities/formBuilderEntity';
-import { useNavigate } from 'react-router-dom';
-import useModalStrip from '../../global-hooks/useModalStrip';
-import { TemplateType } from '../../types/FormTemplateTypes';
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import { addTemplate } from "../../redux/entities/formBuilderEntity";
+import { useNavigate } from "react-router-dom";
+import useModalStrip from "../../global-hooks/useModalStrip";
+import { TemplateType } from "../../types/FormTemplateTypes";
 
 interface NewFormDialogComponentProps {
-  openDialog: boolean,
-  setOpenDialog: (arg: boolean)=>void
+  openDialog: boolean;
+  setOpenDialog: (arg: boolean) => void;
 }
 
-interface NewFormDataType{
-  formName: string
+interface NewFormDataType {
+  formName: string;
 }
 
 const textboxStyle = {
@@ -20,8 +26,10 @@ const textboxStyle = {
   maxWidth: "100%",
   marginTop: "20px",
 };
- 
-const NewFormDialogComponent: FunctionComponent<NewFormDialogComponentProps> = (props) => {
+
+const NewFormDialogComponent: FunctionComponent<NewFormDialogComponentProps> = (
+  props
+) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { showModalStrip } = useModalStrip();
@@ -29,28 +37,30 @@ const NewFormDialogComponent: FunctionComponent<NewFormDialogComponentProps> = (
   const [creatingForm, setCreatingForm] = useState<boolean>(false);
 
   const [newFormData, setNewFormData] = useState<NewFormDataType>({
-    formName: ''
+    formName: "",
   });
 
-  const handleInputChange:ChangeEventHandler<HTMLInputElement>  = (e)=>{
-    const {name , value} = e.target;
+  const handleInputChange: ChangeEventHandler<HTMLInputElement> = (e) => {
+    const { name, value } = e.target;
     setNewFormData((prev) => ({ ...prev, [name]: value }));
-  }
+  };
 
-  const handleFormSubmit: FormEventHandler<HTMLFormElement> = async (e)=>{
+  const handleFormSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
-    if(newFormData.formName === ''){
+    if (newFormData.formName === "") {
       showModalStrip("danger", "Form name cannot be empty", 5000);
       return;
     }
     setCreatingForm(true);
-    try{
-      const template: TemplateType = await dispatch(addTemplate(newFormData)).unwrap();
+    try {
+      const template: TemplateType = await dispatch(
+        addTemplate(newFormData)
+      ).unwrap();
       navigate(`/formbuilder/${template.id}`);
-    } catch(ex){
+    } catch (ex) {
       showModalStrip("danger", "Error occured while creating a new Form", 5000);
     }
-  }
+  };
 
   return (
     <>
@@ -128,6 +138,6 @@ const NewFormDialogComponent: FunctionComponent<NewFormDialogComponentProps> = (
       </Dialog>
     </>
   );
-}
- 
+};
+
 export default NewFormDialogComponent;

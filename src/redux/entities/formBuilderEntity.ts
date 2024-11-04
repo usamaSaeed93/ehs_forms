@@ -9,7 +9,7 @@ import {
 import { generateID } from "../../utils/common";
 import moment from "moment";
 import _ from "lodash";
-import { getAllForms } from "../../api";
+import { getAllForms, saveForm } from "../../api";
 
 interface AddTemplateType {
   formName: string;
@@ -38,24 +38,43 @@ export const getAllTemplates = createAsyncThunk(
 );
 
 // Logic to get Single Template
+// export const getSingleTemplate = createAsyncThunk(
+//   "formBuilderEntity/getSingleTemplate",
+//   async (templateId: string, thunkAPI) => {
+//     try {
+//       // Open the Circular Progress
+//       thunkAPI.dispatch(openCircularProgress());
+
+//       // Fetch the single template from the API
+//       const response = await getAllForms(templateId);
+
+//       return response.form_content; // Return the single template data
+//     } catch (error) {
+//       console.error("Error fetching single template:", error);
+//       return thunkAPI.rejectWithValue("Failed to fetch the template");
+//     } finally {
+//       // Close the Circular Progress
+//       thunkAPI.dispatch(closeCircularProgress());
+//     }
+//   }
+// );
+
 export const getSingleTemplate = createAsyncThunk(
   "formBuilderEntity/getSingleTemplate",
-  async (templateId: string, thunkAPI) => {
-    try {
-      // Open the Circular Progress
-      thunkAPI.dispatch(openCircularProgress());
-
-      // Fetch the single template from the API
-      const response = await getAllForms(templateId);
-
-      return response.form_content; // Return the single template data
-    } catch (error) {
-      console.error("Error fetching single template:", error);
-      return thunkAPI.rejectWithValue("Failed to fetch the template");
-    } finally {
-      // Close the Circular Progress
-      thunkAPI.dispatch(closeCircularProgress());
-    }
+  async (data: string, thunkAPI) => {
+    // Open the Circular Progress
+    thunkAPI.dispatch(openCircularProgress());
+    return await new Promise<TemplateType>((resolve, reject) => {
+      const allTemplates: TemplateType[] = JSON.parse(
+        getFromLocalStorage("templates")
+      );
+      const singleTemplate = allTemplates.filter((t) => t.id === data)[0];
+      setTimeout(() => {
+        // Close the Circular Progress
+        thunkAPI.dispatch(closeCircularProgress());
+        resolve(singleTemplate);
+      }, 1000);
+    });
   }
 );
 
@@ -118,23 +137,39 @@ export const saveTemplate = createAsyncThunk(
   async (data: TemplateType, thunkAPI) => {
     // Open the Circular Progress
     thunkAPI.dispatch(openCircularProgress());
-    return await new Promise<TemplateType>((resolve, reject) => {
-      const allTemplates: TemplateType[] = JSON.parse(
-        getFromLocalStorage("templates")
+
+    try {
+      const response = await saveForm({
+        name: data.formName,
+        form_data: data,
+      });
+
+      // Update template in local storage and close progress after a delay
+      const allTemplates = JSON.parse(
+        localStorage.getItem("templates") || "[]"
+      );
+      const templateIndex = allTemplates.findIndex(
+        (t: TemplateType) => t.id === data.id
       );
 
-      let templateIndex = allTemplates.findIndex((t) => t.id === data.id);
-      allTemplates[templateIndex] = data;
+      if (templateIndex !== -1) {
+        allTemplates[templateIndex] = data;
+      } else {
+        allTemplates.push(data);
+      }
+
       setTimeout(() => {
         thunkAPI.dispatch(closeCircularProgress());
-        saveToLocalStorage("templates", JSON.stringify(allTemplates));
-        resolve(data);
+        localStorage.setItem("templates", JSON.stringify(allTemplates));
       }, 1000);
-    });
+
+      return response;
+    } catch (error) {
+      thunkAPI.dispatch(closeCircularProgress());
+      return thunkAPI.rejectWithValue(error);
+    }
   }
 );
-
-
 
 const slice = createSlice({
   name: "formBuilderEntity",

@@ -39,8 +39,8 @@ if (process.env.NODE_ENV === "localhost") {
 
 interface FormBuilderProps {
   template: TemplateType;
-  id: string;
-  fullForm: any;
+  id?: string;
+  fullForm?: any;
 }
 
 const useStyles = makeStyles()(() => ({
@@ -73,7 +73,7 @@ const FormBuilder: FunctionComponent<FormBuilderProps> = (props) => {
 
   const publishForm = async () => {
     try {
-      await updateForm(props.id, props.fullForm);
+      await saveForm();
     } catch {
       console.log("Error in publishing form");
     }
@@ -106,7 +106,6 @@ const FormBuilder: FunctionComponent<FormBuilderProps> = (props) => {
                 </div>
                 <div className="col-lg-6">
                   <div className="container p-20 h-100">
-                    {/* Form Details and Action */}
                     <div className="row mb-5">
                       <div className="col-12">
                         <div className="d-flex justify-content-between align-items-between">
@@ -195,7 +194,6 @@ const FormBuilder: FunctionComponent<FormBuilderProps> = (props) => {
                 </div>
               </div>
             </div>
-            {/* Preview Drawer */}
             <FormPreview
               screenType="mobile"
               showPreview={showPreview}

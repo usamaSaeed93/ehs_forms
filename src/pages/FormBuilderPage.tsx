@@ -13,10 +13,10 @@ interface FormBuilderPageProps {}
 
 const FormBuilderPage: FunctionComponent<FormBuilderPageProps> = () => {
   const [loading, setLoading] = useState(true);
-  const [template, setTemplate] = useState<any>(null);
-  // const template = useAppSelector(
-  //   (state) => state.entities.formBuilder.selectedTemplate
-  // );
+  // const [template, setTemplate] = useState<any>(null);
+  const template = useAppSelector(
+    (state) => state.entities.formBuilder.selectedTemplate
+  );
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { showModalStrip } = useModalStrip();
@@ -25,35 +25,16 @@ const FormBuilderPage: FunctionComponent<FormBuilderPageProps> = () => {
   // Ref to check if the template was already fetched
   const hasFetched = useRef(false);
 
-  // useEffect(() => {
-  //   if (!formId || hasFetched.current) return; // Avoid multiple API calls
-
-  //   hasFetched.current = true; // Mark as fetched
-
-  //   (async () => {
-  //     try {
-  //       setLoading(true);
-  //       const template = await dispatch(getSingleTemplate(formId)).unwrap();
-  //       if (!template) throw new Error("Not found");
-  //     } catch (ex) {
-  //       showModalStrip("danger", "The form id is not correct", 5000);
-  //       navigate("/");
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   })();
-
-  //   return () => {
-  //     hasFetched.current = false; // Reset for future renders if needed
-  //     dispatch(setSelectedTemplateNull());
-  //   };
-  // }, [dispatch, formId, navigate, showModalStrip]);
-
   useEffect(() => {
+    if (!formId || hasFetched.current) return; // Avoid multiple API calls
+
+    hasFetched.current = true; // Mark as fetched
+
     (async () => {
       try {
-        const response = await getAllForms(formId);
-        setTemplate(response);
+        setLoading(true);
+        const template = await dispatch(getSingleTemplate(formId)).unwrap();
+        if (!template) throw new Error("Not found");
       } catch (ex) {
         showModalStrip("danger", "The form id is not correct", 5000);
         navigate("/");
@@ -61,7 +42,26 @@ const FormBuilderPage: FunctionComponent<FormBuilderPageProps> = () => {
         setLoading(false);
       }
     })();
-  }, []);
+
+    return () => {
+      hasFetched.current = false; // Reset for future renders if needed
+      dispatch(setSelectedTemplateNull());
+    };
+  }, [dispatch, formId, navigate]);
+
+  // useEffect(() => {
+  //   (async () => {
+  //     try {
+  //       const response = await getAllForms(formId);
+  //       setTemplate(response);
+  //     } catch (ex) {
+  //       showModalStrip("danger", "The form id is not correct", 5000);
+  //       navigate("/");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   })();
+  // }, []);
   const defaultForm = {
     id: "0",
     formName: "",
@@ -82,11 +82,7 @@ const FormBuilderPage: FunctionComponent<FormBuilderPageProps> = () => {
   return (
     <>
       {template ? (
-        <FormBuilder
-          template={template.form_content}
-          id={formId}
-          fullForm={template}
-        />
+        <FormBuilder template={template} />
       ) : (
         <FormBuilder template={defaultForm} />
       )}
