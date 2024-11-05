@@ -18,20 +18,28 @@ interface AddTemplateType {
 // Logic to Get All Templates
 export const getAllTemplates = createAsyncThunk(
   "formBuilderEntity/getAllTemplates",
-  async (userId: number, thunkAPI) => {
+  async (data, thunkAPI) => {
+    // Open the Circular Progress
+    thunkAPI.dispatch(openCircularProgress());
+
     try {
-      // Open the Circular Progress
-      thunkAPI.dispatch(openCircularProgress());
+      // Check if templates exist in localStorage
+      let templatesInStorage = JSON.parse(getFromLocalStorage("templates"));
 
-      // Fetch templates from the API using getAllForms
-      const templates = await getAllForms(userId);
+      // If templates are not in localStorage, initialize and save them
+      if (!templatesInStorage) {
+        templatesInStorage = DemoFormLayouts;
+        saveToLocalStorage("templates", JSON.stringify(templatesInStorage));
+      }
 
-      return templates; // Return fetched templates
+      // Fetch forms from the API using `getAllForms` if templates exist or were just created
+      const forms = await getAllForms(); // Pass any necessary parameters
+
+      return forms; // Return both templates and forms
     } catch (error) {
       console.error("Error in getAllTemplates thunk:", error);
-      return thunkAPI.rejectWithValue("Failed to fetch templates");
+      return thunkAPI.rejectWithValue("Failed to fetch templates and forms");
     } finally {
-      // Close the Circular Progress
       thunkAPI.dispatch(closeCircularProgress());
     }
   }
@@ -100,6 +108,7 @@ export const addTemplate = createAsyncThunk(
         publishStatus: "draft",
         updatedAt: 0,
       };
+      console.log(allTemplates);
       allTemplates.push(template);
       setTimeout(() => {
         saveToLocalStorage("templates", JSON.stringify(allTemplates));
