@@ -13,7 +13,8 @@ import { generateID } from "../../../utils/common";
 import { useAppDispatch } from "../../../redux/hooks";
 import { openModal } from "../../../redux/uireducers/modalstrip";
 import moment from "moment";
-import { saveTemplate } from "../../../redux/entities/formBuilderEntity";
+import { saveTemplate, updateTemplate } from "../../../redux/entities/formBuilderEntity";
+
 import useModalStrip from "../../../global-hooks/useModalStrip";
 
 interface useFormBuilderProps {
@@ -85,8 +86,8 @@ const useFormBuilder = (props: useFormBuilderProps) => {
       setFormLayoutComponents(newState);
       setSelectedControl((prev) =>
         prev &&
-        (prev.id === containerId ||
-          (prev as FormLayoutComponentChildrenType).containerId === containerId)
+          (prev.id === containerId ||
+            (prev as FormLayoutComponentChildrenType).containerId === containerId)
           ? undefined
           : prev
       );
@@ -258,7 +259,7 @@ const useFormBuilder = (props: useFormBuilderProps) => {
     if (
       currentTemplate.publishHistory.length > 0 &&
       JSON.stringify(currentTemplate.publishHistory[0].formLayoutComponents) ===
-        JSON.stringify(formLayoutComponents)
+      JSON.stringify(formLayoutComponents)
     ) {
       showModalStrip(
         "info",
@@ -324,6 +325,40 @@ const useFormBuilder = (props: useFormBuilderProps) => {
       });
   };
 
+  const updateForm = (formId: string) => {
+    if (formLayoutComponents.length === 0) {
+      showModalStrip("danger", "Form cannot be empty", 5000);
+      return;
+    }
+
+    if (!checkIfControlsInContainer()) {
+      return;
+    }
+    const currentTemplate = JSON.parse(JSON.stringify(selectedTemplate));
+
+    if (
+      JSON.stringify(currentTemplate.formLayoutComponents) ===
+      JSON.stringify(formLayoutComponents)
+    ) {
+      showModalStrip(
+        "info",
+        "No Change in current & previous saved version.",
+        5000
+      );
+      return;
+    }
+    currentTemplate.formLayoutComponents = formLayoutComponents;
+    currentTemplate.publishStatus = FormPublishStatus.DRAFT;
+    currentTemplate.updatedAt = moment().unix() * 1000;
+
+    dispatch(updateTemplate({ data: currentTemplate, formId }))
+      .unwrap()
+      .then((resolvedvalue) => {
+        showModalStrip("success", "Changes in Form Saved.", 5000);
+      });
+  };
+
+
   return {
     handleItemAdded,
     deleteContainer,
@@ -338,6 +373,7 @@ const useFormBuilder = (props: useFormBuilderProps) => {
     selectedTemplate,
     formLayoutComponents,
     selectedControl,
+    updateForm,
   };
 };
 

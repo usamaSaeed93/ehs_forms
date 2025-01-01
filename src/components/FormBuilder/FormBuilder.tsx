@@ -53,11 +53,13 @@ const useStyles = makeStyles()(() => ({
     overflowY: "auto",
   },
 }));
+import { useParams } from "react-router-dom";
 
 const FormBuilder: FunctionComponent<FormBuilderProps> = (props) => {
   const {
     handleItemAdded,
     saveForm,
+    updateForm,
     deleteContainer,
     deleteControl,
     editContainerProperties,
@@ -70,10 +72,10 @@ const FormBuilder: FunctionComponent<FormBuilderProps> = (props) => {
     formLayoutComponents,
     selectedControl,
   } = useFormBuilder({ template: props.template });
-
+  const { formId } = useParams();
   const publishForm = async () => {
     try {
-      await saveForm();
+      updateForm(formId);
     } catch {
       console.log("Error in publishing form");
     }
@@ -132,7 +134,7 @@ const FormBuilder: FunctionComponent<FormBuilderProps> = (props) => {
                               Preview
                             </Button>
                             <Button
-                              onClick={publishForm}
+                              onClick={() => publishForm()}
                               className="mx-2"
                               color="primary"
                               endIcon={<Publish />}

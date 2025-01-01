@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import NewFormDialogComponent from "../components/FormTemplates/NewFormDialogComponent";
 import FormLayoutComponent from "../components/FormTemplates/FormLayoutComponent";
 import { getAllForms } from "../api";
-interface TemplatesPageProps {}
+interface TemplatesPageProps { }
 
 const TemplatesPage: FunctionComponent<TemplatesPageProps> = () => {
   const templates = useAppSelector(
@@ -41,19 +41,28 @@ const TemplatesPage: FunctionComponent<TemplatesPageProps> = () => {
   return (
     <>
       <div className="d-flex mt-5 flex-column align-items-center justify-content-center">
-        <h3>All Form Templates</h3>
+        <h3>All Quiz Templates</h3>
         <div className="form-templates row mt-3">
           <FormLayoutComponent
             createdFormLayout={false}
             setOpenDialog={setOpenDialog}
           />
-          {templates.map((template) => (
-            <FormLayoutComponent
-              key={template.id}
-              template={template}
-              createdFormLayout={true}
-            />
-          ))}
+          <div style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "10px",
+            justifyContent: "center",
+
+          }}>
+
+            {templates.map((template) => (
+              <FormLayoutComponent
+                key={template.id}
+                template={template}
+                createdFormLayout={true}
+              />
+            ))}
+          </div>
         </div>
       </div>
       <NewFormDialogComponent

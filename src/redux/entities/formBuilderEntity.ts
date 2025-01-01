@@ -9,7 +9,7 @@ import {
 import { generateID } from "../../utils/common";
 import moment from "moment";
 import _ from "lodash";
-import { getAllForms, saveForm } from "../../api";
+import { deleteForm, getAllForms, saveForm, updateForm } from "../../api";
 
 interface AddTemplateType {
   formName: string;
@@ -90,26 +90,37 @@ export const getSingleTemplate = createAsyncThunk(
 export const addTemplate = createAsyncThunk(
   "formBuilderEntity/addTemplate",
   async (data: AddTemplateType, thunkAPI) => {
-    return await new Promise<TemplateType>((resolve, reject) => {
-      const currentDateTime = moment().unix() * 1000;
+    const currentDateTime = moment().unix() * 1000;
 
-      const allTemplates: TemplateType[] = JSON.parse(
-        getFromLocalStorage("templates")
-      );
-      // Create new Template
-      const template: TemplateType = {
-        id: generateID(),
-        formName: data.formName,
-        createdAt: currentDateTime,
-        creator: "Test User",
-        formLayoutComponents: [],
-        lastPublishedAt: 0,
-        publishHistory: [],
-        publishStatus: "draft",
-        updatedAt: 0,
-      };
-      console.log(allTemplates);
-      allTemplates.push(template);
+    // Fetch all templates from the backend or local storage
+    const allTemplates = await getAllForms();
+
+    // Save the form and get the returned form object
+    const form = await saveForm({
+      name: data.formName,
+    });
+
+    // Generate a new ID for the form and update its ID
+    const newId = form.id;
+
+    // Create a new template object
+    const template: TemplateType = {
+      id: newId,
+      formName: data.formName,
+      createdAt: currentDateTime,
+      creator: "Test User",
+      formLayoutComponents: [],
+      lastPublishedAt: 0,
+      publishHistory: [],
+      publishStatus: "draft",
+      updatedAt: 0,
+    };
+
+    // Add the new template to the list of templates
+    allTemplates.push(template);
+
+    // Save the updated templates to local storage after a delay
+    return await new Promise<TemplateType>((resolve, reject) => {
       setTimeout(() => {
         saveToLocalStorage("templates", JSON.stringify(allTemplates));
         resolve(template);
@@ -118,20 +129,19 @@ export const addTemplate = createAsyncThunk(
   }
 );
 
-// Logic to delete a template
+
 export const deleteTemplate = createAsyncThunk(
   "formBuilderEntity/deleteTemplate",
   async (data: string, thunkAPI) => {
-    // Open the Circular Progress
     thunkAPI.dispatch(openCircularProgress());
     return await new Promise<number>((resolve, reject) => {
       const allTemplates: TemplateType[] = JSON.parse(
         getFromLocalStorage("templates")
       );
       const deleteIndex = allTemplates.findIndex((t) => t.id === data);
+      deleteForm(data);
       allTemplates.splice(deleteIndex, 1);
       setTimeout(() => {
-        // Close the Circular Progress
         thunkAPI.dispatch(closeCircularProgress());
         saveToLocalStorage("templates", JSON.stringify(allTemplates));
         resolve(deleteIndex);
@@ -170,6 +180,52 @@ export const saveTemplate = createAsyncThunk(
       setTimeout(() => {
         thunkAPI.dispatch(closeCircularProgress());
         localStorage.setItem("templates", JSON.stringify(allTemplates));
+      }, 1000);
+
+      return response;
+    } catch (error) {
+      thunkAPI.dispatch(closeCircularProgress());
+      return thunkAPI.rejectWithValue(error);
+    }
+  }
+);
+export const updateTemplate = createAsyncThunk(
+  "formBuilderEntity/saveTemplate",
+  async (
+    { data, formId }: { data: TemplateType; formId: string },
+    thunkAPI
+  ) => {
+    // Open the Circular Progress
+    thunkAPI.dispatch(openCircularProgress());
+
+    try {
+      // Update the form in the backend
+      const response = await updateForm({
+        id: formId,
+        form_data: data,
+      });
+
+      // Fetch all templates from local storage
+      const allTemplates = JSON.parse(
+        localStorage.getItem("templates") || "[]"
+      );
+
+      // Find the index of the template to update
+      const templateIndex = allTemplates.findIndex(
+        (t: TemplateType) => t.id === data.id
+      );
+
+      // Update or add the template in the array
+      if (templateIndex !== -1) {
+        allTemplates[templateIndex] = data;
+      } else {
+        allTemplates.push(data);
+      }
+
+      // Save updated templates to local storage and close progress
+      setTimeout(() => {
+        localStorage.setItem("templates", JSON.stringify(allTemplates));
+        thunkAPI.dispatch(closeCircularProgress());
       }, 1000);
 
       return response;

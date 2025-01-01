@@ -23,12 +23,16 @@ export const saveForm = async (data: Partial<any>): Promise<any> => {
 };
 
 export const updateForm = async (
-  formId: string,
   data: Partial<any>
 ): Promise<any> => {
-  const response = await axiosInstance.patch<any>(`/forms/${formId}/`, data);
+  console.log("formId", data.id);
+  const response = await axiosInstance.patch<any>(`/forms/${data.id}/`, data);
   return response.data;
 };
+
+export const deleteForm = async (formId: string): Promise<void> => {
+  await axiosInstance.delete(`/forms/${formId}`);
+}
 
 export const login = async (data: Partial<User>): Promise<User> => {
   const response = await axiosInstance.post<User>("/users/login/", data);
