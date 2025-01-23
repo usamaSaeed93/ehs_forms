@@ -11,11 +11,12 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import { login } from "../../api";
 import React from "react";
-
+import useModalStrip from "../../global-hooks/useModalStrip";
 const LoginBoxed = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const { showModalStrip } = useModalStrip();
 
   const {
     register,
@@ -34,9 +35,8 @@ const LoginBoxed = () => {
         navigate("/");
       }
     } catch {
-      toast.error(
-        "Invalid Credentials Or You Haven't approved yet. Contact your Admin."
-      );
+      showModalStrip("danger", "Email and Password don't match!", 5000);
+      return;
     }
   };
 

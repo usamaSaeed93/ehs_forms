@@ -4,6 +4,7 @@ import axios, { InternalAxiosRequestConfig } from "axios";
 // Create an Axios instance with default settings
 const axiosInstance = axios.create({
   baseURL: process.env.REACT_APP_API_BASE_URL || "https://app.dfwcz.com/api",
+  // baseURL: process.env.REACT_APP_API_BASE_URL || "http://localhost:8000/api",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",

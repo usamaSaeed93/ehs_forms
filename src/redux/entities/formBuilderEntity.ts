@@ -98,6 +98,7 @@ export const addTemplate = createAsyncThunk(
     // Save the form and get the returned form object
     const form = await saveForm({
       name: data.formName,
+      is_quiz: data.is_quiz
     });
 
     // Generate a new ID for the form and update its ID
