@@ -55,7 +55,7 @@ const TemplatesPage: FunctionComponent<TemplatesPageProps> = () => {
 
           }}>
 
-            {templates.map((template) => (
+            {templates.filter((form) => form.form_slug == null).map((template) => (
               <FormLayoutComponent
                 key={template.id}
                 template={template}
